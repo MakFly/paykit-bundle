@@ -1,0 +1,26 @@
+paykit:
+    stripe:
+        secret_key: '%env(STRIPE_SECRET_KEY)%'
+        webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+    currency: usd
+
+    features:
+        messages: metered
+        pro_models: boolean
+
+    plans:
+        free:
+            group: base
+            default: true
+            includes:
+                messages: { limit: 100, reset: month }
+        pro:
+            group: base
+            price: { amount: 19, interval: month }
+            includes:
+                messages: { limit: 2000, reset: month }
+                pro_models: ~
+
+when@test:
+    paykit:
+        provider: fake

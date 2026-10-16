@@ -1,0 +1,17 @@
+{
+    "bundles": {
+        "PayKit\\Bundle\\PayKitBundle": ["all"]
+    },
+    "copy-from-recipe": {
+        "config/": "%CONFIG_DIR%/"
+    },
+    "env": {
+        "STRIPE_SECRET_KEY": "sk_test_change_me",
+        "STRIPE_WEBHOOK_SECRET": "whsec_change_me"
+    },
+    "post-install-output": [
+        "  * Declare your features and plans in <info>config/packages/paykit.yaml</>",
+        "  * Run <info>php bin/console doctrine:migrations:migrate</> then <info>php bin/console paykit:push</>",
+        "  * Point a Stripe webhook endpoint to <info>https://your-app/paykit/webhook</>"
+    ]
+}

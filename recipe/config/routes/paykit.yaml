@@ -1,0 +1,3 @@
+paykit:
+    resource: '@PayKitBundle/config/routes.php'
+    prefix: /paykit
