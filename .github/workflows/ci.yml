@@ -1,12 +1,17 @@
 name: CI
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   tests:
@@ -42,3 +47,16 @@ jobs:
           coverage: none
       - uses: ramsey/composer-install@v3
       - run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+  # Single stable status check to mark as "required" in branch protection,
+  # so matrix changes never require editing the protection rules.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [tests, phpstan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All required jobs succeeded
+        run: |
+          echo '${{ toJSON(needs) }}'
+          [ "${{ needs.tests.result }}" = "success" ] && [ "${{ needs.phpstan.result }}" = "success" ]

@@ -31,6 +31,21 @@ final class BundleTest extends KernelTestCase
         (new SchemaTool($em))->createSchema($em->getMetadataFactory()->getAllMetadata());
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        // Older symfony/framework-bundle + PHPUnit 11.0 combos leave the kernel's debug exception
+        // handler installed after shutdown, which PHPUnit flags as risky. Restore it explicitly.
+        while (true) {
+            $previous = set_exception_handler(static fn () => null);
+            restore_exception_handler();
+            if (null === $previous) {
+                break;
+            }
+            restore_exception_handler();
+        }
+    }
+
     public function testServicesAndCatalogAreWired(): void
     {
         $payKit = self::getContainer()->get(PayKit::class);
