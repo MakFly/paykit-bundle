@@ -1,0 +1,9 @@
+node_modules/
+.dev/
+apps/web/dist/
+apps/api/vendor/
+apps/api/var/
+apps/api/.env.local
+apps/api/.env.*.local
+apps/api/.phpunit.cache/
+apps/api/config/reference.php

@@ -1,0 +1,17 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+    orm:
+        auto_generate_proxy_classes: true
+        controller_resolver: { auto_mapping: false }
+        mappings:
+            Shop:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Module/Shop/Entity'
+                prefix: 'App\Module\Shop\Entity'
+
+doctrine_migrations:
+    enable_profiler: false
+    migrations_paths:
+        'App\Migrations': '%kernel.project_dir%/migrations'

@@ -1,0 +1,116 @@
+---
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+
+const t = Astro.locals.t;
+const command = 'composer require makfly/paykit-bundle';
+---
+
+<pk-install class="pk-install">
+	<div class="pk-install-meta">
+		<span class="pk-install-name">{t('pk.install.name')}</span>
+		<span class="pk-install-req">{t('pk.install.requirements')}</span>
+	</div>
+	<div class="pk-install-cmd">
+		<code>{command}</code>
+		<button
+			type="button"
+			data-command={command}
+			data-copy-label={t('pk.install.copy')}
+			data-copied-label={t('pk.install.copied')}
+			aria-label={t('pk.install.copy')}
+		>
+			<svg class="pk-i-copy" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2" /><path d="M4 16V5a1 1 0 0 1 1-1h11" /></svg>
+			<svg class="pk-i-check" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7" /></svg>
+		</button>
+	</div>
+</pk-install>
+
+<Default />
+
+<script>
+	class Install extends HTMLElement {
+		constructor() {
+			super();
+			const button = this.querySelector('button')!;
+			const copyLabel = button.dataset.copyLabel ?? '';
+			const copiedLabel = button.dataset.copiedLabel ?? '';
+			button.addEventListener('click', async () => {
+				await navigator.clipboard.writeText(button.dataset.command ?? '');
+				button.dataset.copied = '';
+				button.setAttribute('aria-label', copiedLabel);
+				setTimeout(() => {
+					delete button.dataset.copied;
+					button.setAttribute('aria-label', copyLabel);
+				}, 2000);
+			});
+		}
+	}
+	customElements.define('pk-install', Install);
+</script>
+
+<style>
+	.pk-install {
+		display: block;
+		border: 1px solid var(--pk-border);
+		border-radius: 0.75rem;
+		overflow: hidden;
+	}
+	.pk-install-meta {
+		display: grid;
+		gap: 0.125rem;
+		padding: 0.75rem 0.875rem;
+	}
+	.pk-install-name {
+		color: var(--pk-fg);
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+	.pk-install-req {
+		color: var(--pk-muted);
+		font-size: 0.75rem;
+	}
+	.pk-install-cmd {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+		border-top: 1px solid var(--pk-border);
+		background: var(--pk-subtle);
+	}
+	.pk-install-cmd code {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		background: none;
+		border: 0;
+		padding: 0;
+		color: var(--pk-fg);
+		font: 0.75rem/1.5 var(--__sl-font-mono);
+	}
+	.pk-install-cmd button {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 1.75rem;
+		height: 1.75rem;
+		border: 0;
+		border-radius: 0.375rem;
+		background: transparent;
+		color: var(--pk-muted);
+		cursor: pointer;
+	}
+	.pk-install-cmd button:hover {
+		background: var(--pk-hover);
+		color: var(--pk-fg);
+	}
+	.pk-i-check,
+	button[data-copied] .pk-i-copy {
+		display: none;
+	}
+	button[data-copied] .pk-i-check {
+		display: block;
+		color: var(--pk-accent);
+	}
+</style>

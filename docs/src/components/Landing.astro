@@ -1,0 +1,1417 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+/**
+ * Landing page of the docs (`/` and `/fr/`).
+ * Structure borrowed from paykit.sh (framed page, ruled sections, app + backend demo),
+ * openship.io (centered hero under the install command, dark inset slab, numbered setup)
+ * and multica.ai (the product UI sitting on the hero). The memorable part is the playable
+ * demo: a fake app on the left, the log the bundle would write on the right.
+ */
+const locale = Astro.locals.starlightRoute.locale;
+const lang = locale === 'fr' ? 'fr' : 'en';
+const prefix = locale ? `/${locale}` : '';
+const link = (path: string) => `${prefix}${path}`;
+
+const copy = {
+	en: {
+		title: 'Stripe billing for Symfony, without the glue code.',
+		lead: 'Declare plans in YAML, gate features, meter usage. The bundle runs Checkout, plan changes and webhooks, and keeps billing state in your own database.',
+		primary: 'Read the introduction',
+		secondary: 'Install the bundle',
+		copyLabel: 'Copy the install command',
+		copied: 'Copied',
+		status: 'Version 0.1, experimental. PHP 8.2+, Symfony 7.1+, Doctrine ORM 3.',
+		demo: {
+			label: 'Playable demo of the bundle',
+			log: 'Symfony log',
+			free: 'Free',
+			pro: 'Pro',
+			freeMeta: '3 messages a month',
+			proMeta: '$19 a month, 100 messages',
+			current: 'Current plan',
+			upgrade: 'Upgrade to Pro',
+			downgrade: 'Switch to Free',
+			keep: 'Keep Pro',
+			scheduled: 'Switches to Free at the end of the period',
+			paying: 'Waiting for Stripe Checkout…',
+			send: 'Send a message',
+			left: 'messages left this month',
+			unlimitedHint: 'Pro includes 100 messages a month.',
+			blocked: 'You have used your 3 messages this month. Upgrade to keep chatting.',
+			sent: 'Message sent.',
+			reset: 'Reset demo',
+			empty: 'Use the app on the left: every call the bundle makes shows up here.',
+		},
+		stepsTitle: 'From composer require to gated features',
+		stepsLead: 'Four steps, each one a command or a few lines of config.',
+		steps: [
+			['Install', 'Add the bundle and create its tables with the migration it ships.'],
+			['Declare', 'Describe features and plans in config/packages/paykit.yaml.'],
+			['Push', 'paykit:push creates the Stripe products and prices, and versions them.'],
+			['Gate', 'Protect a controller and count usage with one attribute.'],
+		],
+		gridTitle: 'What the bundle covers',
+		grid: [
+			['Plans in config', 'Features, groups, add-ons and trials, validated when the container compiles.', '/guides/plans/'],
+			['Every plan change', 'subscribe() handles Checkout, prorated upgrades, scheduled downgrades and resumes.', '/guides/subscriptions/'],
+			['Usage metering', 'An atomic report(), grants that stack across plans, resets without a cron.', '/guides/entitlements/'],
+			['Access control', 'The #[RequiresFeature] attribute, the PAYKIT_FEATURE voter and Twig functions.', '/guides/access-control/'],
+			['Idempotent webhooks', 'Each Stripe event is applied once. Failures are retried, duplicates skipped.', '/guides/webhooks/'],
+			['Tests without Stripe', 'A fake provider records calls and replays webhooks.', '/guides/testing/'],
+		],
+		portTitle: 'Coming from PayKit?',
+		portLead: 'This bundle is a Symfony port of PayKit, the billing framework for TypeScript. The concepts carry over.',
+		portRows: [
+			['plan({ id, price, includes })', 'paykit.plans.<id> in YAML'],
+			['paykit.subscribe({...})', '$payKit->subscribe()'],
+			['paykitjs push', 'bin/console paykit:push'],
+		],
+		portLink: 'Full mapping',
+		ctaTitle: 'Add billing to your Symfony app',
+		ctaLead: 'Install the bundle, declare a plan, and protect your first feature.',
+		ctaPrimary: 'Install the bundle',
+		ctaSecondary: 'Try the Playground',
+	},
+	fr: {
+		title: 'La facturation Stripe pour Symfony, sans code de colle.',
+		lead: "Déclarez vos offres en YAML, contrôlez l'accès aux fonctionnalités, mesurez l'usage. Le bundle gère le Checkout, les changements d'offre et les webhooks, et garde l'état de facturation dans votre propre base.",
+		primary: "Lire l'introduction",
+		secondary: 'Installer le bundle',
+		copyLabel: "Copier la commande d'installation",
+		copied: 'Copié',
+		status: 'Version 0.1, expérimentale. PHP 8.2+, Symfony 7.1+, Doctrine ORM 3.',
+		demo: {
+			label: 'Démo jouable du bundle',
+			log: 'Log Symfony',
+			free: 'Gratuite',
+			pro: 'Pro',
+			freeMeta: '3 messages par mois',
+			proMeta: '19 $ par mois, 100 messages',
+			current: 'Offre actuelle',
+			upgrade: 'Passer à Pro',
+			downgrade: "Revenir à l'offre gratuite",
+			keep: 'Garder Pro',
+			scheduled: "Bascule vers l'offre gratuite en fin de période",
+			paying: 'En attente du Checkout Stripe…',
+			send: 'Envoyer un message',
+			left: 'messages restants ce mois-ci',
+			unlimitedHint: "L'offre Pro inclut 100 messages par mois.",
+			blocked: 'Vous avez utilisé vos 3 messages ce mois-ci. Passez à Pro pour continuer.',
+			sent: 'Message envoyé.',
+			reset: 'Réinitialiser la démo',
+			empty: "Utilisez l'application à gauche : chaque appel du bundle s'affiche ici.",
+		},
+		stepsTitle: 'De composer require aux fonctionnalités protégées',
+		stepsLead: 'Quatre étapes, chacune tient en une commande ou quelques lignes de config.',
+		steps: [
+			['Installer', 'Ajoutez le bundle et créez ses tables avec la migration fournie.'],
+			['Déclarer', 'Décrivez fonctionnalités et offres dans config/packages/paykit.yaml.'],
+			['Pousser', 'paykit:push crée les produits et prix Stripe, et les versionne.'],
+			['Protéger', "Protégez un contrôleur et comptez l'usage avec un seul attribut."],
+		],
+		gridTitle: 'Ce que couvre le bundle',
+		grid: [
+			['Offres dans la config', 'Fonctionnalités, groupes, options et essais, validés à la compilation du conteneur.', '/guides/plans/'],
+			["Chaque changement d'offre", 'subscribe() gère le Checkout, les montées au prorata, les descentes programmées et les reprises.', '/guides/subscriptions/'],
+			["Mesure d'usage", 'Un report() atomique, des droits cumulés entre offres, des remises à zéro sans cron.', '/guides/entitlements/'],
+			["Contrôle d'accès", "L'attribut #[RequiresFeature], le voter PAYKIT_FEATURE et des fonctions Twig.", '/guides/access-control/'],
+			['Webhooks idempotents', 'Chaque événement Stripe est appliqué une fois. Les échecs sont rejoués, les doublons ignorés.', '/guides/webhooks/'],
+			['Tests sans Stripe', 'Un fournisseur factice enregistre les appels et rejoue les webhooks.', '/guides/testing/'],
+		],
+		portTitle: 'Vous venez de PayKit ?',
+		portLead: 'Ce bundle est un portage Symfony de PayKit, le framework de facturation pour TypeScript. Les concepts restent les mêmes.',
+		portRows: [
+			['plan({ id, price, includes })', 'paykit.plans.<id> en YAML'],
+			['paykit.subscribe({...})', '$payKit->subscribe()'],
+			['paykitjs push', 'bin/console paykit:push'],
+		],
+		portLink: 'Correspondance complète',
+		ctaTitle: 'Ajoutez la facturation à votre app Symfony',
+		ctaLead: 'Installez le bundle, déclarez une offre et protégez votre première fonctionnalité.',
+		ctaPrimary: 'Installer le bundle',
+		ctaSecondary: 'Essayer le Playground',
+	},
+}[lang];
+
+const install = 'composer require makfly/paykit-bundle';
+/** Lucide-style glyphs for the capability grid, keyed by guide path. */
+const icons: Record<string, string> = {
+	'/guides/plans/': '<path d="M4 6h16M4 12h16M4 18h10" />',
+	'/guides/subscriptions/': '<path d="M4 12a8 8 0 0 1 14-5.3L20 9" /><path d="M20 4v5h-5" /><path d="M20 12a8 8 0 0 1-14 5.3L4 15" /><path d="M4 20v-5h5" />',
+	'/guides/entitlements/': '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />',
+	'/guides/access-control/': '<rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />',
+	'/guides/webhooks/': '<path d="M13 2 4 14h7l-1 8 9-12h-7Z" />',
+	'/guides/testing/': '<path d="M9 3h6M10 3v6L4 19a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-6-10V3" />',
+};
+const stepCode = [
+	{
+		lang: 'bash',
+		title: '',
+		code: `composer require makfly/paykit-bundle
+php bin/console doctrine:migrations:migrate`,
+	},
+	{
+		lang: 'yaml',
+		title: 'config/packages/paykit.yaml',
+		code: `paykit:
+    features:
+        messages: metered
+        pro_models: boolean
+    plans:
+        free:
+            group: base
+            default: true
+            includes:
+                messages: { limit: 3, reset: month }
+        pro:
+            group: base
+            price: { amount: 19, interval: month }
+            includes:
+                messages: { limit: 100, reset: month }
+                pro_models: ~`,
+	},
+	{
+		lang: 'bash',
+		title: '',
+		code: `php bin/console paykit:push --dry-run   # preview
+php bin/console paykit:push             # create products and prices
+php bin/console paykit:status --throw   # fail CI when plans drift`,
+	},
+	{
+		lang: 'php',
+		title: 'src/Controller/ChatController.php',
+		code: `use PayKit\\Bundle\\Security\\RequiresFeature;
+
+#[RequiresFeature('messages', consume: 1)]   // 402 when the quota is spent
+public function chat(Request $request): Response
+{
+    return $this->json($this->assistant->reply($request));
+}`,
+	},
+];
+---
+
+<div class="not-content pk-landing">
+	<section class="pk-hero">
+		<div class="pk-glow" aria-hidden="true"><span></span><span></span></div>
+		<pk-copy-install class="pk-command pk-reveal" style="--i: 0" data-copied={copy.copied}>
+			<code>{install}</code>
+			<button type="button" data-command={install} aria-label={copy.copyLabel}>
+				<svg class="pk-i-copy" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2" /><path d="M4 16V5a1 1 0 0 1 1-1h11" /></svg>
+				<svg class="pk-i-check" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7" /></svg>
+			</button>
+		</pk-copy-install>
+		<h1 id="_top" class="pk-reveal" style="--i: 1">{copy.title}</h1>
+		<p class="pk-lead pk-reveal" style="--i: 2">{copy.lead}</p>
+		<div class="pk-actions pk-reveal" style="--i: 3">
+			<a class="pk-btn pk-btn-primary" href={link('/introduction/')}>{copy.primary}</a>
+			<a class="pk-btn" href={link('/getting-started/installation/')}>{copy.secondary}</a>
+		</div>
+		<p class="pk-status pk-reveal" style="--i: 4">{copy.status}</p>
+	</section>
+
+	<section class="pk-slab pk-reveal" style="--i: 5" aria-label={copy.demo.label}>
+		<pk-demo class="pk-demo" data-copy={JSON.stringify(copy.demo)}>
+			<div class="pk-window pk-app">
+				<div class="pk-window-bar">
+					<span class="pk-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+					<span class="pk-url">localhost:8000/chat</span>
+					<button type="button" class="pk-reset" data-reset>{copy.demo.reset}</button>
+				</div>
+				<div class="pk-app-body">
+					<div class="pk-plans" role="group" aria-label={copy.demo.current}>
+						<div class="pk-plan" data-plan="free">
+							<div class="pk-plan-head">
+								<span class="pk-plan-name">{copy.demo.free}</span>
+								<span class="pk-plan-tag" data-tag="free">{copy.demo.current}</span>
+							</div>
+							<span class="pk-plan-meta">{copy.demo.freeMeta}</span>
+							<button type="button" class="pk-plan-btn" data-action="downgrade">{copy.demo.downgrade}</button>
+						</div>
+						<div class="pk-plan" data-plan="pro">
+							<div class="pk-plan-head">
+								<span class="pk-plan-name">{copy.demo.pro}</span>
+								<span class="pk-plan-tag" data-tag="pro">{copy.demo.current}</span>
+							</div>
+							<span class="pk-plan-meta">{copy.demo.proMeta}</span>
+							<button type="button" class="pk-plan-btn" data-action="upgrade">{copy.demo.upgrade}</button>
+						</div>
+						<p class="pk-plan-note" data-note hidden></p>
+					</div>
+					<div class="pk-chat">
+						<div class="pk-quota">
+							<span class="pk-quota-count" data-count>3</span>
+							<span class="pk-quota-label">{copy.demo.left}</span>
+						</div>
+						<div class="pk-meter" aria-hidden="true"><span data-meter></span></div>
+						<p class="pk-chat-msg" data-msg aria-live="polite"></p>
+						<button type="button" class="pk-send" data-action="send">{copy.demo.send}</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="pk-window pk-log">
+				<div class="pk-window-bar">
+					<span class="pk-log-title">{copy.demo.log}</span>
+					<span class="pk-log-channel">paykit</span>
+				</div>
+				<ol class="pk-log-lines" data-log aria-live="polite">
+					<li class="pk-log-empty">{copy.demo.empty}</li>
+				</ol>
+			</div>
+		</pk-demo>
+	</section>
+
+	<section class="pk-band" aria-labelledby="pk-steps-title">
+		<div class="pk-band-head">
+			<h2 id="pk-steps-title">{copy.stepsTitle}</h2>
+			<p>{copy.stepsLead}</p>
+		</div>
+		<pk-steps class="pk-steps">
+			<ol class="pk-step-list" role="tablist" aria-orientation="vertical">
+				{
+					copy.steps.map(([title, text], i) => (
+						<li role="presentation">
+							<button
+								type="button"
+								role="tab"
+								id={`pk-step-tab-${i}`}
+								aria-controls={`pk-step-panel-${i}`}
+								aria-selected={i === 0 ? 'true' : 'false'}
+								tabindex={i === 0 ? 0 : -1}
+							>
+								<span class="pk-step-num" aria-hidden="true">{i + 1}</span>
+								<span class="pk-step-text">
+									<span class="pk-step-title">{title}</span>
+									<span class="pk-step-desc">{text}</span>
+								</span>
+							</button>
+						</li>
+					))
+				}
+			</ol>
+			<div class="pk-step-panels">
+				{
+					stepCode.map((step, i) => (
+						<div role="tabpanel" id={`pk-step-panel-${i}`} aria-labelledby={`pk-step-tab-${i}`} hidden={i !== 0}>
+							{step.title ? (
+								<Code code={step.code} lang={step.lang} title={step.title} />
+							) : (
+								<Code code={step.code} lang={step.lang} frame="terminal" />
+							)}
+						</div>
+					))
+				}
+			</div>
+		</pk-steps>
+	</section>
+
+	<section class="pk-band" aria-labelledby="pk-grid-title">
+		<div class="pk-band-head">
+			<h2 id="pk-grid-title">{copy.gridTitle}</h2>
+		</div>
+		<ul class="pk-grid">
+			{
+				copy.grid.map(([title, text, path]) => (
+					<li>
+						<a href={link(path)}>
+							<span class="pk-grid-icon" aria-hidden="true">
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" set:html={icons[path]} />
+							</span>
+							<span class="pk-grid-title">{title}</span>
+							<span class="pk-grid-text">{text}</span>
+						</a>
+					</li>
+				))
+			}
+		</ul>
+	</section>
+
+	<section class="pk-band pk-port" aria-labelledby="pk-port-title">
+		<div class="pk-band-head">
+			<h2 id="pk-port-title">{copy.portTitle}</h2>
+			<p>{copy.portLead}</p>
+			<p><a class="pk-text-link" href={link('/reference/paykit-mapping/')}>{copy.portLink}</a></p>
+		</div>
+		<table class="pk-port-table">
+			<thead>
+				<tr><th scope="col">PayKit (TypeScript)</th><th scope="col">PayKit Bundle (Symfony)</th></tr>
+			</thead>
+			<tbody>
+				{copy.portRows.map(([ts, php]) => (
+					<tr><td><code>{ts}</code></td><td><code>{php}</code></td></tr>
+				))}
+			</tbody>
+		</table>
+	</section>
+
+	<section class="pk-band pk-cta" aria-labelledby="pk-cta-title">
+		<h2 id="pk-cta-title">{copy.ctaTitle}</h2>
+		<p>{copy.ctaLead}</p>
+		<div class="pk-actions">
+			<a class="pk-btn pk-btn-primary" href={link('/getting-started/installation/')}>{copy.ctaPrimary}</a>
+			<a class="pk-btn" href={link('/guides/testing/')}>{copy.ctaSecondary}</a>
+		</div>
+	</section>
+</div>
+
+<script>
+	type DemoCopy = Record<string, string>;
+	type Plan = 'free' | 'pro';
+	type Line = [kind: 'call' | 'ok' | 'warn' | 'http', text: string];
+
+	/**
+	 * The demo is a small state machine that mirrors the bundle's rules:
+	 * free to pro goes through Checkout and a webhook, pro to free is scheduled at period end,
+	 * choosing pro again resumes it, and report() refuses when the quota is spent.
+	 */
+	class Demo extends HTMLElement {
+		copy: DemoCopy = {};
+		plan: Plan = 'free';
+		pendingFree = false;
+		remaining = 3;
+		busy = false;
+		touched = false;
+		log!: HTMLOListElement;
+		clock = 0;
+
+		connectedCallback() {
+			this.copy = JSON.parse(this.dataset.copy ?? '{}');
+			this.log = this.querySelector('[data-log]')!;
+			this.addEventListener('click', (event) => {
+				const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-reset]');
+				if (target) this.touched = true;
+				if (!target || this.busy) return;
+				if (target.hasAttribute('data-reset')) return this.reset();
+				const action = target.dataset.action;
+				if (action === 'upgrade') this.upgrade();
+				if (action === 'downgrade') this.downgrade();
+				if (action === 'send') this.send();
+			});
+			this.render();
+			this.autoplay();
+		}
+
+		/** Plays one short scenario the first time the demo scrolls into view, until the reader takes over. */
+		autoplay() {
+			if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			const observer = new IntersectionObserver(
+				async ([entry]) => {
+					if (!entry.isIntersecting) return;
+					observer.disconnect();
+					const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+					await pause(700);
+					if (this.touched) return;
+					await this.send();
+					await pause(900);
+					if (this.touched) return;
+					await this.upgrade();
+				},
+				{ threshold: 0.45 }
+			);
+			observer.observe(this);
+		}
+
+		limit() {
+			return this.plan === 'pro' ? 100 : 3;
+		}
+
+		time() {
+			const base = new Date(2026, 9, 16, 10, 42, 0).getTime() + this.clock++ * 1300;
+			return new Date(base).toTimeString().slice(0, 8);
+		}
+
+		write([kind, text]: Line) {
+			this.log.querySelector('.pk-log-empty')?.remove();
+			const line = document.createElement('li');
+			line.className = `pk-line pk-line-${kind}`;
+			const time = document.createElement('span');
+			time.className = 'pk-line-time';
+			time.textContent = this.time();
+			const body = document.createElement('span');
+			body.className = 'pk-line-body';
+			body.textContent = text;
+			line.append(time, body);
+			this.log.append(line);
+			this.log.scrollTop = this.log.scrollHeight;
+		}
+
+		async sequence(lines: Line[]) {
+			const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+			for (const line of lines) {
+				this.write(line);
+				if (!reduce) await new Promise((r) => setTimeout(r, 380));
+			}
+		}
+
+		async upgrade() {
+			this.busy = true;
+			if (this.plan === 'pro' && this.pendingFree) {
+				await this.sequence([
+					['call', "$payKit->subscribe('cus_42', 'pro')"],
+					['ok', 'SubscribeAction::Resumed'],
+					['ok', 'SubscriptionScheduledEvent  target: null'],
+				]);
+				this.pendingFree = false;
+			} else {
+				this.setMessage(this.copy.paying);
+				this.render(true);
+				await this.sequence([
+					['call', "$payKit->subscribe('cus_42', 'pro')"],
+					['ok', 'SubscribeAction::Checkout  paymentUrl: checkout.stripe.com/c/pay/…'],
+					['http', 'POST /paykit/webhook  checkout.session.completed  200'],
+					['ok', 'SubscriptionActivatedEvent  free -> pro'],
+					['ok', 'CustomerUpdatedEvent  cus_42'],
+				]);
+				this.plan = 'pro';
+				this.remaining = 100;
+				this.setMessage(this.copy.unlimitedHint);
+			}
+			this.busy = false;
+			this.render();
+		}
+
+		async downgrade() {
+			this.busy = true;
+			await this.sequence([
+				['call', "$payKit->subscribe('cus_42', 'free')"],
+				['warn', 'SubscribeAction::Scheduled  cancel_at_period_end: true'],
+				['ok', 'SubscriptionScheduledEvent  target: free'],
+			]);
+			this.pendingFree = true;
+			this.busy = false;
+			this.render();
+		}
+
+		async send() {
+			this.busy = true;
+			if (this.remaining <= 0) {
+				await this.sequence([
+					['call', "$payKit->check('cus_42', 'messages')"],
+					['warn', 'CheckResult  allowed: false  remaining: 0'],
+					['http', 'POST /chat  402 Payment Required'],
+				]);
+				this.setMessage(this.copy.blocked, true);
+			} else {
+				const left = this.remaining - 1;
+				await this.sequence([
+					['call', "#[RequiresFeature('messages', consume: 1)]"],
+					['http', 'POST /chat  200'],
+					['ok', `$payKit->report('cus_42', 'messages')  remaining: ${left}`],
+				]);
+				this.remaining = left;
+				this.setMessage(this.copy.sent);
+			}
+			this.busy = false;
+			this.render();
+		}
+
+		reset() {
+			this.plan = 'free';
+			this.pendingFree = false;
+			this.remaining = 3;
+			this.clock = 0;
+			this.log.innerHTML = '';
+			const empty = document.createElement('li');
+			empty.className = 'pk-log-empty';
+			empty.textContent = this.copy.empty;
+			this.log.append(empty);
+			this.setMessage('');
+			this.render();
+		}
+
+		setMessage(text: string, warn = false) {
+			const msg = this.querySelector<HTMLElement>('[data-msg]')!;
+			msg.textContent = text;
+			msg.classList.toggle('pk-chat-warn', warn);
+		}
+
+		render(paying = false) {
+			const q = <T extends HTMLElement>(s: string) => this.querySelector<T>(s)!;
+			this.querySelectorAll<HTMLElement>('.pk-plan').forEach((card) => {
+				card.toggleAttribute('data-current', card.dataset.plan === this.plan);
+			});
+			q('[data-tag="free"]').hidden = this.plan !== 'free';
+			q('[data-tag="pro"]').hidden = this.plan !== 'pro';
+
+			const upgrade = q<HTMLButtonElement>('[data-action="upgrade"]');
+			const downgrade = q<HTMLButtonElement>('[data-action="downgrade"]');
+			upgrade.hidden = this.plan === 'pro' && !this.pendingFree;
+			upgrade.textContent = this.pendingFree ? this.copy.keep : this.copy.upgrade;
+			upgrade.disabled = paying;
+			downgrade.hidden = this.plan !== 'pro' || this.pendingFree;
+
+			const note = q('[data-note]');
+			note.hidden = !this.pendingFree;
+			note.textContent = this.copy.scheduled;
+
+			q('[data-count]').textContent = String(this.remaining);
+			const meter = q('[data-meter]');
+			meter.style.width = `${(this.remaining / this.limit()) * 100}%`;
+			meter.toggleAttribute('data-empty', this.remaining === 0);
+			q<HTMLButtonElement>('[data-action="send"]').disabled = paying;
+		}
+	}
+	customElements.define('pk-demo', Demo);
+
+	class Steps extends HTMLElement {
+		connectedCallback() {
+			const tabs = [...this.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+			const select = (index: number, focus = false) => {
+				tabs.forEach((tab, i) => {
+					const on = i === index;
+					tab.setAttribute('aria-selected', String(on));
+					tab.tabIndex = on ? 0 : -1;
+					this.querySelector<HTMLElement>(`#${tab.getAttribute('aria-controls')}`)!.hidden = !on;
+				});
+				if (focus) tabs[index].focus();
+			};
+			tabs.forEach((tab, i) => {
+				tab.addEventListener('click', () => select(i));
+				tab.addEventListener('keydown', (event) => {
+					if (event.key === 'ArrowDown' || event.key === 'ArrowRight') select((i + 1) % tabs.length, true);
+					if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') select((i - 1 + tabs.length) % tabs.length, true);
+				});
+			});
+		}
+	}
+	customElements.define('pk-steps', Steps);
+
+	class CopyInstall extends HTMLElement {
+		connectedCallback() {
+			const button = this.querySelector('button')!;
+			const label = button.getAttribute('aria-label') ?? '';
+			button.addEventListener('click', async () => {
+				await navigator.clipboard.writeText(button.dataset.command ?? '');
+				button.dataset.copied = '';
+				button.setAttribute('aria-label', this.dataset.copied ?? '');
+				setTimeout(() => {
+					delete button.dataset.copied;
+					button.setAttribute('aria-label', label);
+				}, 2000);
+			});
+		}
+	}
+	customElements.define('pk-copy-install', CopyInstall);
+</script>
+
+<style>
+	/* The page sits in a frame with side rails, like paykit.sh; sections are ruled bands. */
+	.pk-landing {
+		--pk-slab-bg: #0a0a0a;
+		--pk-slab-line: #262626;
+		margin-block: 0 2rem;
+		border-inline: 1px solid var(--pk-border);
+	}
+	:global([data-theme='dark']) .pk-landing {
+		--pk-slab-bg: #141414;
+	}
+
+	/* Hero */
+	.pk-hero {
+		position: relative;
+		isolation: isolate;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 4.5rem 1.25rem 3rem;
+		text-align: center;
+	}
+	.pk-command {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		max-width: 100%;
+		padding: 0.25rem 0.25rem 0.25rem 0.875rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 999px;
+		background: var(--pk-subtle);
+	}
+	.pk-command code {
+		overflow: hidden;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--pk-muted);
+		font: 0.8125rem/1.5 var(--sl-font-mono);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.pk-command code::before {
+		content: '$ ';
+		opacity: 0.6;
+	}
+	.pk-command button {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 1.875rem;
+		height: 1.875rem;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--pk-muted);
+		cursor: pointer;
+	}
+	.pk-command button:hover {
+		background: var(--pk-hover);
+		color: var(--pk-fg);
+	}
+	.pk-i-check,
+	button[data-copied] .pk-i-copy {
+		display: none;
+	}
+	button[data-copied] .pk-i-check {
+		display: block;
+		color: var(--pk-accent);
+	}
+	h1 {
+		margin: 1.75rem 0 0;
+		max-width: 18ch;
+		color: var(--pk-fg);
+		font-size: clamp(2.5rem, 1.25rem + 4.5vw, 4.75rem);
+		font-weight: 600;
+		line-height: 1.02;
+		letter-spacing: -0.05em;
+		text-wrap: balance;
+	}
+	.pk-lead {
+		margin: 1.5rem 0 0;
+		max-width: 38rem;
+		color: var(--pk-muted);
+		font-size: 1.125rem;
+		line-height: 1.6;
+		text-wrap: pretty;
+	}
+	.pk-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.75rem;
+		margin-top: 2rem;
+	}
+	.pk-btn {
+		display: inline-flex;
+		align-items: center;
+		height: 2.75rem;
+		padding-inline: 1.375rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 999px;
+		background: var(--pk-bg);
+		color: var(--pk-fg);
+		font-size: 0.9375rem;
+		font-weight: 500;
+		text-decoration: none;
+		transition: background-color 0.15s;
+	}
+	.pk-btn:hover {
+		background: var(--pk-hover);
+	}
+	.pk-btn-primary {
+		border-color: var(--pk-fg);
+		background: var(--pk-fg);
+		color: var(--pk-bg);
+	}
+	.pk-btn-primary:hover {
+		background: color-mix(in srgb, var(--pk-fg) 85%, var(--pk-bg));
+	}
+	.pk-status {
+		margin: 1.25rem 0 0;
+		color: var(--pk-muted);
+		font-size: 0.8125rem;
+	}
+
+	/* Dark slab holding the demo, inset from the rails like openship.io */
+	.pk-slab {
+		margin: 0 0.75rem;
+		padding: 1rem;
+		border-radius: 1.25rem;
+		background: var(--pk-slab-bg);
+	}
+	.pk-demo {
+		display: grid;
+		gap: 1rem;
+	}
+	.pk-window {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		border-radius: 0.875rem;
+		overflow: hidden;
+	}
+	.pk-window-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		height: 2.5rem;
+		padding-inline: 0.875rem;
+		font-size: 0.75rem;
+	}
+	.pk-app {
+		border: 1px solid var(--pk-border);
+		background: var(--pk-bg);
+		color: var(--pk-fg);
+	}
+	.pk-app .pk-window-bar {
+		border-bottom: 1px solid var(--pk-border);
+		background: var(--pk-subtle);
+		color: var(--pk-muted);
+	}
+	.pk-dots {
+		display: inline-flex;
+		gap: 0.375rem;
+	}
+	.pk-dots i {
+		width: 0.625rem;
+		height: 0.625rem;
+		border-radius: 50%;
+		background: var(--pk-border);
+	}
+	.pk-url {
+		flex: 1;
+		min-width: 0;
+		padding: 0.1875rem 0.75rem;
+		border-radius: 999px;
+		background: var(--pk-bg);
+		font-family: var(--sl-font-mono);
+		text-align: center;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.pk-reset {
+		border: 0;
+		background: none;
+		color: var(--pk-muted);
+		font: 0.75rem var(--sl-font);
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.pk-reset:hover {
+		color: var(--pk-fg);
+	}
+	.pk-app-body {
+		display: grid;
+		flex: 1;
+	}
+	.pk-plans {
+		display: grid;
+		align-content: start;
+		gap: 0.625rem;
+		padding: 1rem;
+	}
+	.pk-plan {
+		display: grid;
+		gap: 0.25rem;
+		padding: 0.875rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 0.625rem;
+		text-align: start;
+	}
+	.pk-plan[data-current] {
+		border-color: var(--pk-fg);
+	}
+	.pk-plan-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+	.pk-plan-name {
+		font-weight: 600;
+		font-size: 0.9375rem;
+	}
+	.pk-plan-tag {
+		padding: 0 0.5rem;
+		border-radius: 999px;
+		background: var(--pk-hover);
+		color: var(--pk-muted);
+		font-size: 0.6875rem;
+		line-height: 1.375rem;
+	}
+	.pk-plan-tag[hidden] {
+		display: none;
+	}
+	.pk-plan-meta {
+		color: var(--pk-muted);
+		font-size: 0.8125rem;
+	}
+	.pk-plan-btn {
+		justify-self: start;
+		margin-top: 0.5rem;
+		height: 2rem;
+		padding-inline: 0.875rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 999px;
+		background: var(--pk-bg);
+		color: var(--pk-fg);
+		font: 500 0.8125rem var(--sl-font);
+		cursor: pointer;
+	}
+	.pk-plan[data-plan='pro'] .pk-plan-btn {
+		border-color: var(--pk-fg);
+		background: var(--pk-fg);
+		color: var(--pk-bg);
+	}
+	.pk-plan-btn:disabled,
+	.pk-send:disabled {
+		opacity: 0.5;
+		cursor: progress;
+	}
+	.pk-plan-btn[hidden] {
+		display: none;
+	}
+	.pk-plan-note {
+		margin: 0;
+		color: #b45309;
+		font-size: 0.8125rem;
+		text-align: start;
+	}
+	:global([data-theme='dark']) .pk-plan-note {
+		color: #fbbf24;
+	}
+	.pk-chat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.625rem;
+		padding: 1rem;
+		border-top: 1px solid var(--pk-border);
+		text-align: start;
+	}
+	.pk-quota {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+	.pk-quota-count {
+		font-size: 2.25rem;
+		font-weight: 600;
+		letter-spacing: -0.04em;
+		font-variant-numeric: tabular-nums;
+	}
+	.pk-quota-label {
+		color: var(--pk-muted);
+		font-size: 0.8125rem;
+	}
+	.pk-meter {
+		height: 0.375rem;
+		border-radius: 999px;
+		background: var(--pk-hover);
+		overflow: hidden;
+	}
+	.pk-meter span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--pk-accent);
+		transition: width 0.35s ease;
+	}
+	.pk-meter span[data-empty] {
+		background: #dc2626;
+	}
+	.pk-chat-msg {
+		min-height: 2.6em;
+		margin: 0;
+		color: var(--pk-muted);
+		font-size: 0.8125rem;
+		line-height: 1.3;
+	}
+	.pk-chat-msg.pk-chat-warn {
+		color: #dc2626;
+	}
+	.pk-send {
+		align-self: flex-start;
+		margin-top: auto;
+		height: 2.25rem;
+		padding-inline: 1rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 999px;
+		background: var(--pk-bg);
+		color: var(--pk-fg);
+		font: 500 0.875rem var(--sl-font);
+		cursor: pointer;
+	}
+	.pk-send:hover,
+	.pk-plan-btn:hover {
+		filter: brightness(0.96);
+	}
+
+	.pk-log {
+		border: 1px solid var(--pk-slab-line);
+		background: #050505;
+		color: #d4d4d4;
+	}
+	.pk-log .pk-window-bar {
+		justify-content: space-between;
+		border-bottom: 1px solid var(--pk-slab-line);
+	}
+	.pk-log-title {
+		color: #ededed;
+		font-weight: 500;
+	}
+	.pk-log-channel {
+		padding: 0 0.5rem;
+		border: 1px solid var(--pk-slab-line);
+		border-radius: 999px;
+		color: #a1a1a1;
+		font-family: var(--sl-font-mono);
+		line-height: 1.375rem;
+	}
+	.pk-log-lines {
+		flex: 1;
+		height: 18rem;
+		margin: 0;
+		padding: 0.75rem 0.875rem;
+		overflow-y: auto;
+		list-style: none;
+		font: 0.75rem/1.7 var(--sl-font-mono);
+		text-align: start;
+		scrollbar-width: thin;
+		scrollbar-color: #333 transparent;
+	}
+	.pk-log-empty {
+		display: grid;
+		place-items: center;
+		height: 100%;
+		color: #737373;
+		font-family: var(--sl-font);
+		font-size: 0.875rem;
+		text-align: center;
+	}
+	.pk-log-lines :global(.pk-line) {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.75rem;
+		animation: pk-line-in 0.25s ease-out;
+	}
+	.pk-log-lines :global(.pk-line-time) {
+		color: #525252;
+	}
+	.pk-log-lines :global(.pk-line-body) {
+		overflow-wrap: anywhere;
+	}
+	.pk-log-lines :global(.pk-line-call .pk-line-body) {
+		color: #ededed;
+	}
+	.pk-log-lines :global(.pk-line-ok .pk-line-body) {
+		color: #5eead4;
+	}
+	.pk-log-lines :global(.pk-line-warn .pk-line-body) {
+		color: #fbbf24;
+	}
+	.pk-log-lines :global(.pk-line-http .pk-line-body) {
+		color: #93c5fd;
+	}
+	@keyframes pk-line-in {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+	}
+
+	/* Ruled bands */
+	.pk-band {
+		margin-top: 4rem;
+		padding: 3.5rem 1.25rem 0;
+		border-top: 1px solid var(--pk-border);
+	}
+	.pk-band-head {
+		max-width: 40rem;
+		margin-bottom: 2rem;
+		text-align: start;
+	}
+	h2 {
+		margin: 0;
+		color: var(--pk-fg);
+		font-size: clamp(1.625rem, 1.25rem + 1.25vw, 2.25rem);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.035em;
+		text-wrap: balance;
+	}
+	.pk-band-head p {
+		margin: 0.75rem 0 0;
+		color: var(--pk-muted);
+		font-size: 1.0625rem;
+		line-height: 1.6;
+	}
+	.pk-text-link {
+		color: var(--pk-accent);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--pk-accent) 40%, transparent);
+		text-underline-offset: 3px;
+	}
+
+	/* Setup steps: a real sequence, so numbered */
+	.pk-steps {
+		display: grid;
+		gap: 1.5rem;
+	}
+	.pk-step-list {
+		display: grid;
+		gap: 0.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.pk-step-list button {
+		display: flex;
+		gap: 0.875rem;
+		width: 100%;
+		padding: 0.875rem;
+		border: 1px solid transparent;
+		border-radius: 0.75rem;
+		background: transparent;
+		color: var(--pk-fg);
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+		transition: background-color 0.15s, border-color 0.15s;
+	}
+	.pk-step-list button:hover {
+		background: var(--pk-subtle);
+	}
+	.pk-step-list button[aria-selected='true'] {
+		border-color: var(--pk-border);
+		background: var(--pk-subtle);
+	}
+	.pk-step-num {
+		display: grid;
+		place-items: center;
+		flex-shrink: 0;
+		width: 1.75rem;
+		height: 1.75rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 50%;
+		background: var(--pk-bg);
+		color: var(--pk-muted);
+		font-size: 0.8125rem;
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+	}
+	button[aria-selected='true'] .pk-step-num {
+		border-color: var(--pk-fg);
+		background: var(--pk-fg);
+		color: var(--pk-bg);
+	}
+	.pk-step-text {
+		display: grid;
+		gap: 0.25rem;
+	}
+	.pk-step-title {
+		font-weight: 600;
+	}
+	.pk-step-desc {
+		color: var(--pk-muted);
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+	.pk-step-panels {
+		min-width: 0;
+	}
+	.pk-step-panels :global(.expressive-code) {
+		margin: 0;
+	}
+
+	/* Capability grid: cells drawn by rules, no floating cards */
+	.pk-grid {
+		display: grid;
+		margin: 0 -1.25rem;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--pk-border);
+	}
+	.pk-grid li {
+		border-bottom: 1px solid var(--pk-border);
+	}
+	.pk-grid a {
+		display: grid;
+		gap: 0.5rem;
+		height: 100%;
+		padding: 1.5rem 1.25rem;
+		color: inherit;
+		text-align: start;
+		text-decoration: none;
+		transition: background-color 0.15s;
+	}
+	.pk-grid a:hover {
+		background: var(--pk-subtle);
+	}
+	.pk-grid-title {
+		color: var(--pk-fg);
+		font-weight: 600;
+	}
+	.pk-grid-text {
+		color: var(--pk-muted);
+		font-size: 0.875rem;
+		line-height: 1.55;
+	}
+
+	/* PayKit mapping */
+	.pk-port {
+		display: grid;
+		gap: 1.5rem;
+	}
+	.pk-port .pk-band-head {
+		margin-bottom: 0;
+	}
+	.pk-port-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.875rem;
+		text-align: start;
+	}
+	.pk-port-table th,
+	.pk-port-table td {
+		padding: 0.75rem 1rem 0.75rem 0;
+		border-bottom: 1px solid var(--pk-border);
+		text-align: start;
+		vertical-align: top;
+	}
+	.pk-port-table th {
+		color: var(--pk-muted);
+		font-weight: 500;
+	}
+	.pk-port-table code {
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--pk-fg);
+		font: 0.8125rem/1.5 var(--sl-font-mono);
+		overflow-wrap: anywhere;
+	}
+
+	/* Closing call to action */
+	.pk-cta {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding-bottom: 4rem;
+		text-align: center;
+	}
+	.pk-cta p {
+		margin: 0.75rem 0 0;
+		max-width: 32rem;
+		color: var(--pk-muted);
+		font-size: 1.0625rem;
+		line-height: 1.6;
+	}
+
+	@media (min-width: 50rem) {
+		.pk-hero {
+			padding-block: 6rem 3.5rem;
+		}
+		.pk-slab {
+			margin-inline: 1.25rem;
+			padding: 1.5rem;
+		}
+		.pk-app-body {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
+		.pk-chat {
+			border-top: 0;
+			border-inline-start: 1px solid var(--pk-border);
+		}
+		.pk-band {
+			padding-inline: 2rem;
+		}
+		.pk-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			margin-inline: -2rem;
+		}
+		.pk-grid li:nth-child(odd) {
+			border-inline-end: 1px solid var(--pk-border);
+		}
+		.pk-grid a {
+			padding-inline: 2rem;
+		}
+	}
+	@media (min-width: 64rem) {
+		.pk-demo {
+			grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+		}
+		.pk-log-lines {
+			height: auto;
+			min-height: 18rem;
+		}
+		.pk-steps {
+			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+			gap: 3rem;
+			align-items: start;
+		}
+		.pk-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+		.pk-grid li:nth-child(odd) {
+			border-inline-end: 0;
+		}
+		.pk-grid li:not(:nth-child(3n)) {
+			border-inline-end: 1px solid var(--pk-border);
+		}
+		.pk-port {
+			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+			gap: 3rem;
+			align-items: start;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.pk-log-lines :global(.pk-line) {
+			animation: none;
+		}
+		.pk-meter span {
+			transition: none;
+		}
+	}
+	/* ─── Color and motion ─── */
+	/* Hero light: two soft teal and blue lights over a faint ledger grid. */
+	.pk-glow {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		overflow: hidden;
+		pointer-events: none;
+		background-image:
+			linear-gradient(var(--pk-border) 1px, transparent 1px),
+			linear-gradient(90deg, var(--pk-border) 1px, transparent 1px);
+		background-size: 3rem 3rem;
+		background-position: center top;
+		mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 20%, transparent 75%);
+		opacity: 0.6;
+	}
+	.pk-glow span {
+		position: absolute;
+		width: 38rem;
+		height: 24rem;
+		border-radius: 50%;
+		filter: blur(70px);
+		opacity: 0.45;
+		animation: pk-drift 14s ease-in-out infinite alternate;
+	}
+	.pk-glow span:first-child {
+		top: 8%;
+		left: 18%;
+		background: #2dd4bf;
+	}
+	.pk-glow span:last-child {
+		top: 22%;
+		right: 14%;
+		background: #60a5fa;
+		animation-delay: -7s;
+	}
+	:global([data-theme='dark']) .pk-glow span {
+		opacity: 0.28;
+	}
+	@keyframes pk-drift {
+		to {
+			transform: translate3d(3rem, 1.5rem, 0) scale(1.08);
+		}
+	}
+	h1 {
+		background: linear-gradient(180deg, var(--pk-fg) 55%, color-mix(in srgb, var(--pk-fg) 62%, var(--pk-accent)));
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	/* One page-load sequence: the hero pieces rise in order, then the demo. */
+	.pk-reveal {
+		animation: pk-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+		animation-delay: calc(var(--i, 0) * 90ms + 80ms);
+	}
+	@keyframes pk-rise {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+			filter: blur(4px);
+		}
+	}
+
+	/* The slab glows in the brand colors. */
+	.pk-slab {
+		position: relative;
+		background:
+			radial-gradient(60rem 22rem at 50% -6rem, rgb(45 212 191 / 0.22), transparent 70%),
+			radial-gradient(40rem 20rem at 100% 110%, rgb(96 165 250 / 0.16), transparent 70%),
+			var(--pk-slab-bg);
+		box-shadow:
+			0 0 0 1px rgb(45 212 191 / 0.18),
+			0 40px 120px -50px rgb(45 212 191 / 0.55);
+	}
+	.pk-meter span {
+		background: linear-gradient(90deg, #14b8a6, #60a5fa);
+	}
+	.pk-plan[data-current] {
+		border-color: var(--pk-accent);
+		box-shadow: 0 0 0 3px color-mix(in srgb, var(--pk-accent) 18%, transparent);
+	}
+	.pk-plan-tag {
+		background: color-mix(in srgb, var(--pk-accent) 14%, transparent);
+		color: var(--pk-accent);
+	}
+
+	/* Active setup step and its code panel */
+	button[aria-selected='true'] .pk-step-num {
+		border-color: var(--pk-accent);
+		background: var(--pk-accent);
+		color: #fff;
+	}
+	:global([data-theme='dark']) button[aria-selected='true'] .pk-step-num {
+		color: #04201d;
+	}
+	.pk-step-list button[aria-selected='true'] {
+		border-color: color-mix(in srgb, var(--pk-accent) 35%, var(--pk-border));
+	}
+	.pk-step-panels [role='tabpanel']:not([hidden]) {
+		animation: pk-rise 0.35s ease-out both;
+	}
+
+	/* Capability cells: a tinted icon, and a teal rule that draws in on hover */
+	.pk-grid li {
+		position: relative;
+	}
+	.pk-grid a::before {
+		content: '';
+		position: absolute;
+		inset: -1px 0 auto;
+		height: 2px;
+		background: linear-gradient(90deg, #14b8a6, #60a5fa);
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+	}
+	.pk-grid a:hover::before,
+	.pk-grid a:focus-visible::before {
+		transform: scaleX(1);
+	}
+	.pk-grid-icon {
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		margin-bottom: 0.5rem;
+		border-radius: 0.625rem;
+		background: color-mix(in srgb, var(--pk-accent) 12%, transparent);
+		color: var(--pk-accent);
+	}
+
+	/* Closing band in the brand tint */
+	.pk-cta {
+		margin-top: 4rem;
+		background:
+			radial-gradient(40rem 16rem at 50% 100%, rgb(45 212 191 / 0.16), transparent 70%),
+			radial-gradient(30rem 14rem at 85% 0%, rgb(96 165 250 / 0.12), transparent 70%);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pk-glow span,
+		.pk-reveal,
+		.pk-step-panels [role='tabpanel']:not([hidden]) {
+			animation: none;
+		}
+		.pk-grid a::before {
+			transition: none;
+		}
+	}
+</style>

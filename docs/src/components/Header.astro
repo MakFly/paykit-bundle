@@ -1,0 +1,183 @@
+---
+import Search from './Search.astro';
+import ThemeSelect from './ThemeSelect.astro';
+import { Icon } from '@astrojs/starlight/components';
+import logo from '../assets/logo.svg';
+
+const t = Astro.locals.t;
+// `undefined` on English (root locale), `fr` on French pages.
+const locale = Astro.locals.starlightRoute.locale;
+const prefix = locale ? `/${locale}` : '';
+const localize = (href: string) => (href === '/' ? `${prefix}/` : `${prefix}${href}`);
+
+// Same page in the other language: strip `/fr` and put it back for the French link.
+const bare = Astro.url.pathname.replace(/^\/fr(?=\/|$)/, '') || '/';
+const path = bare.endsWith('/') ? bare : `${bare}/`;
+const toEn = path;
+const toFr = path === '/' ? '/fr/' : `/fr${path}`;
+
+const sections = [
+	{ label: t('pk.nav.docs'), href: localize('/introduction/'), match: (p: string) => p.startsWith('/introduction') || p.startsWith('/getting-started') },
+	{ label: t('pk.nav.guides'), href: localize('/guides/plans/'), match: (p: string) => p.startsWith('/guides') },
+	{ label: t('pk.nav.reference'), href: localize('/reference/configuration/'), match: (p: string) => p.startsWith('/reference') },
+];
+---
+
+<div class="pk-header">
+	<div class="pk-brand">
+		<a href={localize('/')} class="pk-logo">
+			<img src={logo.src} alt="" width="24" height="24" />
+			<span>PayKit</span>
+		</a>
+		<span class="pk-version" title={t('pk.version.title')}>v0.1</span>
+	</div>
+
+	<nav class="pk-nav" aria-label={t('pk.nav.label')}>
+		{
+			sections.map((s) => (
+				<a href={s.href} aria-current={s.match(path) ? 'true' : undefined}>
+					{s.label}
+				</a>
+			))
+		}
+	</nav>
+
+	<div class="pk-actions">
+		<Search />
+		<a
+			class="pk-icon-link pk-desktop"
+			href="https://github.com/MakFly/paykit-bundle"
+			aria-label={t('pk.github.label')}
+		>
+			<Icon name="github" size="1.125rem" />
+		</a>
+		<nav class="pk-lang" aria-label={t('pk.lang.label')}>
+			<a
+				href={toEn}
+				hreflang="en"
+				lang="en"
+				aria-label={t('pk.lang.en')}
+				aria-current={locale === 'fr' ? undefined : 'true'}
+			>
+				{t('pk.lang.enShort')}
+			</a>
+			<a
+				href={toFr}
+				hreflang="fr"
+				lang="fr"
+				aria-label={t('pk.lang.fr')}
+				aria-current={locale === 'fr' ? 'true' : undefined}
+			>
+				{t('pk.lang.frShort')}
+			</a>
+		</nav>
+		<div class="pk-desktop"><ThemeSelect /></div>
+	</div>
+</div>
+
+<style>
+	.pk-header {
+		display: flex;
+		align-items: center;
+		gap: 2rem;
+		height: 100%;
+		/* Same content box as the page shell below, so the logo lines up with the sidebar. */
+		max-width: calc(var(--pk-max-width) - 2 * var(--pk-gutter));
+		margin-inline: auto;
+	}
+	.pk-brand {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		flex-shrink: 0;
+	}
+	.pk-logo {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--pk-fg);
+		font-weight: 600;
+		font-size: 1rem;
+		letter-spacing: -0.01em;
+		text-decoration: none;
+	}
+	.pk-version {
+		border: 1px solid var(--pk-border);
+		border-radius: 999px;
+		padding: 0 0.5rem;
+		color: var(--pk-muted);
+		font-size: 0.75rem;
+		line-height: 1.375rem;
+	}
+	.pk-nav {
+		display: none;
+		gap: 1.5rem;
+	}
+	.pk-nav a {
+		color: var(--pk-muted);
+		font-size: 0.875rem;
+		text-decoration: none;
+		transition: color 0.15s;
+	}
+	.pk-nav a:hover,
+	.pk-nav a[aria-current] {
+		color: var(--pk-fg);
+	}
+	.pk-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-inline-start: auto;
+	}
+	.pk-icon-link {
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 0.5rem;
+		color: var(--pk-muted);
+	}
+	.pk-icon-link:hover {
+		background: var(--pk-hover);
+		color: var(--pk-fg);
+	}
+	.pk-lang {
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+		height: 2.25rem;
+		padding: 0.125rem;
+		border: 1px solid var(--pk-border);
+		border-radius: 0.5rem;
+		background: var(--pk-bg);
+	}
+	.pk-lang a {
+		display: grid;
+		place-items: center;
+		height: 100%;
+		padding-inline: 0.4375rem;
+		border-radius: 0.375rem;
+		color: var(--pk-muted);
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		text-decoration: none;
+	}
+	.pk-lang a:hover,
+	.pk-lang a[aria-current] {
+		background: var(--pk-hover);
+		color: var(--pk-fg);
+	}
+	.pk-desktop {
+		display: none;
+	}
+	@media (min-width: 50rem) {
+		.pk-nav,
+		.pk-desktop {
+			display: flex;
+		}
+		.pk-icon-link.pk-desktop {
+			display: grid;
+		}
+	}
+</style>

@@ -1,0 +1,72 @@
+---
+title: Introduction
+description: PayKit Bundle adds Stripe billing to a Symfony app. You declare plans in YAML, and the bundle handles checkout, plan changes, usage limits and webhooks, with billing state in your own database.
+---
+
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Welcome to the PayKit Bundle documentation.
+
+## What is PayKit Bundle?
+
+PayKit Bundle is a Symfony bundle for subscription billing. Your plans live in
+`config/packages/paykit.yaml`, your controllers ask simple questions ("can this
+customer use this feature?", "how many messages are left?"), and the bundle keeps
+Stripe and your database in sync.
+
+```php
+$result = $payKit->subscribe($user->getId(), 'pro', successUrl: $successUrl);
+if ($result->paymentUrl) {
+    return $this->redirect($result->paymentUrl);   // Stripe Checkout
+}
+
+if (!$payKit->check($userId, 'messages')->allowed) {
+    throw new HttpException(402, 'Usage limit reached');
+}
+$answer = $chat->reply($prompt);
+$payKit->report($userId, 'messages');              // consume 1 unit
+```
+
+<Aside type="caution" title="Version 0.1 is experimental">
+The API may change before 1.0. Pin a version in `composer.json`.
+</Aside>
+
+## Main features
+
+| Feature | Description |
+|---|---|
+| [Plans in config](/guides/plans/) | Boolean and metered features, plan groups, add-ons, trials. Validated when the container compiles. |
+| [One call for every plan change](/guides/subscriptions/) | `subscribe()` handles new plans, prorated upgrades, scheduled downgrades, cancellations and resumes. |
+| [Entitlements and metering](/guides/entitlements/) | `check()`, `can()` and an atomic `report()`. Balances reset on their own, without a cron. |
+| [Access control](/guides/access-control/) | A `#[RequiresFeature]` attribute, the `PAYKIT_FEATURE` voter and Twig functions. |
+| [Idempotent webhooks](/guides/webhooks/) | Each Stripe event is applied once. Failures are retried, duplicates skipped. |
+| [Testing without Stripe](/guides/testing/) | A fake provider records calls and replays webhooks, so tests stay offline. |
+
+## How to use these docs
+
+The sidebar follows the order you will need things in:
+
+- **Getting started** installs the bundle and declares a first plan.
+- **Guides** explain one topic each, from plans to custom payment providers.
+- **Reference** lists every configuration option, PHP method and console command.
+
+Press <kbd>Ctrl</kbd> <kbd>K</kbd> (or <kbd>⌘</kbd> <kbd>K</kbd>) to search, and use
+**Copy page** at the top of any page to paste it into an AI assistant as Markdown.
+
+## Prerequisites
+
+The docs assume you know Symfony services, controllers and Doctrine, and that you
+have a Stripe account for production. The fake provider covers local development
+and tests.
+
+<CardGrid>
+	<LinkCard title="Installation" description="Install the bundle, create its tables and connect Stripe." href="/getting-started/installation/" />
+	<LinkCard title="Coming from PayKit (TypeScript)" description="See how each PayKit concept maps to the bundle." href="/reference/paykit-mapping/" />
+</CardGrid>
+
+## Credits
+
+PayKit Bundle is an independent Symfony port of [PayKit](https://paykit.sh)
+([getpaykit/paykit](https://github.com/getpaykit/paykit)), the billing framework for
+TypeScript by Max Katz and contributors. It reuses PayKit's concepts and API shape,
+reimplemented in PHP, and contains no PayKit source code.

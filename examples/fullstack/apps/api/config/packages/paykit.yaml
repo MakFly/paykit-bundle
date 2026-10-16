@@ -1,0 +1,54 @@
+# One catalog, one plan group per demo module. A customer can hold one
+# subscription per group; each module only reads its own group.
+paykit:
+    provider: fake
+    currency: eur
+    features:
+        # SaaS module
+        messages: metered
+        pro_models: boolean
+        # E-commerce module (Club membership)
+        free_shipping: boolean
+        member_prices: boolean
+        express_shipping: metered
+    plans:
+        free:
+            name: Découverte
+            group: saas
+            default: true
+            includes:
+                messages: { limit: 10, reset: month }
+        pro:
+            name: Pro
+            group: saas
+            price: { amount: 19, interval: month }
+            includes:
+                messages: { limit: 100, reset: month }
+                pro_models: ~
+        ultra:
+            name: Ultra
+            group: saas
+            price: { amount: 49, interval: month }
+            includes:
+                messages: ~
+                pro_models: ~
+
+        club_none:
+            name: Sans adhésion
+            group: club
+            default: true
+        club:
+            name: Club
+            group: club
+            price: { amount: 5, interval: month }
+            includes:
+                free_shipping: ~
+                express_shipping: { limit: 2, reset: month }
+        club_plus:
+            name: Club+
+            group: club
+            price: { amount: 12, interval: month }
+            includes:
+                free_shipping: ~
+                member_prices: ~
+                express_shipping: ~

@@ -4,3 +4,6 @@
 /.phpunit.cache/
 /.phpunit.result.cache
 /tests/Functional/config/reference.php
+
+# Local agent worktrees (nested git repositories)
+/.claude/worktrees/

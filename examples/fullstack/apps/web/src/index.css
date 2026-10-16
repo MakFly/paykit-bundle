@@ -1,0 +1,197 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "tw-shimmer";
+@plugin "tailwind-scrollbar" {
+  nocompatible: true;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.6 0.13 155);
+  --warning: oklch(0.75 0.15 70);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.72 0.14 155);
+  --warning: oklch(0.8 0.14 75);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  @keyframes collapsible-down {
+  from {
+    height: 0;
+    }
+  to {
+    height: var(--radix-collapsible-content-height, var(--collapsible-panel-height, auto));
+    }
+  }
+  @keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height, var(--collapsible-panel-height, auto));
+    }
+  to {
+    height: 0;
+    }
+  }
+}
+
+/* Établi (store) and Plume (SaaS) each own a palette and type pair. */
+@theme {
+  --font-etabli-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-etabli: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-plume: "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-plume-serif: "Newsreader", ui-serif, Georgia, serif;
+
+  --color-beton: #e6e9e5;
+  --color-craie: #f5f6f3;
+  --color-ardoise: #1f2d28;
+  --color-ardoise-soft: #56645e;
+  --color-ruban: #f4c430;
+
+  --color-encre: #1d3b9c;
+  --color-encre-pale: #e3e9fb;
+  --color-nuit: #161a2b;
+  --color-brume: #f1f3f8;
+  --color-or: #a87b1e;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply min-w-[320px] bg-background font-sans text-foreground antialiased;
+    font-synthesis: none;
+  }
+  /* Tailwind 4 resets buttons to the default cursor. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * Thin scrollbars everywhere, hidden until the scrolling element is hovered.
+ * Unlayered on purpose: tailwind-scrollbar resets scrollbar-color in its base layer.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: --alpha(var(--color-neutral-500) / 50%) transparent;
+}
+
+/* Targets stay at least 44px tall on touch screens. */
+@media (pointer: coarse) {
+  [data-slot="button"] {
+    min-height: 2.75rem;
+  }
+}
+
+/* Plume landing: the demo rewrite plays once on load. */
+@keyframes plume-strike {
+  from { background-size: 0 2px; }
+  to { background-size: 100% 2px; }
+}
+@keyframes plume-fade {
+  to { opacity: 0.35; }
+}
+@keyframes plume-reveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.plume-filler {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 55% / 0 2px;
+  animation: plume-strike 0.5s ease-out forwards, plume-fade 0.4s ease-out forwards;
+  animation-delay: var(--delay, 0.6s), calc(var(--delay, 0.6s) + 0.5s);
+}
+.plume-result {
+  opacity: 0;
+  animation: plume-reveal 0.6s ease-out 2.4s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plume-filler {
+    background-size: 100% 2px;
+    opacity: 0.35;
+  }
+  .plume-result {
+    opacity: 1;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@custom-variant data-open (&:where([data-state="open"], [data-open]:not([data-open="false"])));
+
+@custom-variant data-closed (&:where([data-state="closed"], [data-closed]:not([data-closed="false"])));

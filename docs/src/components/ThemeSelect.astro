@@ -1,0 +1,60 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+
+const t = Astro.locals.t;
+---
+
+<pk-theme-toggle data-to-dark={t('pk.theme.toDark')} data-to-light={t('pk.theme.toLight')}>
+	<button type="button" class="pk-theme" aria-label={t('pk.theme.toDark')}>
+		<Icon name="moon" size="1.125rem" class="pk-moon" />
+		<Icon name="sun" size="1.125rem" class="pk-sun" />
+	</button>
+</pk-theme-toggle>
+
+<script>
+	// Same storage key as Starlight's ThemeProvider, so the choice survives reloads without a flash.
+	const storageKey = 'starlight-theme';
+
+	class ThemeToggle extends HTMLElement {
+		constructor() {
+			super();
+			const button = this.querySelector('button')!;
+			const toDark = this.dataset.toDark ?? '';
+			const toLight = this.dataset.toLight ?? '';
+			const sync = () => {
+				const dark = document.documentElement.dataset.theme === 'dark';
+				button.setAttribute('aria-label', dark ? toLight : toDark);
+			};
+			sync();
+			button.addEventListener('click', () => {
+				const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+				document.documentElement.dataset.theme = next;
+				localStorage.setItem(storageKey, next);
+				sync();
+			});
+		}
+	}
+	customElements.define('pk-theme-toggle', ThemeToggle);
+</script>
+
+<style>
+	.pk-theme {
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border: 0;
+		border-radius: 0.5rem;
+		background: transparent;
+		color: var(--pk-muted);
+		cursor: pointer;
+	}
+	.pk-theme:hover {
+		background: var(--pk-hover);
+		color: var(--pk-fg);
+	}
+	:global([data-theme='dark']) .pk-moon,
+	:global([data-theme='light']) .pk-sun {
+		display: none;
+	}
+</style>

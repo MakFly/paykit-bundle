@@ -1,0 +1,18 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude: '../src/Kernel.php'
+
+    App\Module\Shared\FakeProviderStore:
+        arguments:
+            $statePath: '%env(resolve:DEMO_STATE_FILE)%'
+
+    # FakeProvider is normally in memory. This local demo preserves its state
+    # across HTTP requests and console commands, alongside the SQLite database.
+    PayKit\Bundle\Provider\PaymentProviderInterface:
+        class: PayKit\Bundle\Testing\FakeProvider
+        factory: ['@App\Module\Shared\FakeProviderStore', 'get']

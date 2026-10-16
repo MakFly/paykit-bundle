@@ -1,0 +1,73 @@
+---
+title: Introduction
+description: PayKit Bundle ajoute la facturation Stripe à une application Symfony. Vous déclarez les offres en YAML, et le bundle gère le paiement, les changements d'offre, les limites d'usage et les webhooks, avec l'état de facturation dans votre propre base de données.
+---
+
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+Bienvenue dans la documentation de PayKit Bundle.
+
+## Qu'est-ce que PayKit Bundle
+
+PayKit Bundle est un bundle Symfony pour la facturation par abonnement. Vos offres
+vivent dans `config/packages/paykit.yaml`, vos contrôleurs posent des questions
+simples (« ce client peut-il utiliser cette fonctionnalité ? », « combien de
+messages reste-t-il ? »), et le bundle garde Stripe et votre base de données
+synchronisés.
+
+```php
+$result = $payKit->subscribe($user->getId(), 'pro', successUrl: $successUrl);
+if ($result->paymentUrl) {
+    return $this->redirect($result->paymentUrl);   // Stripe Checkout
+}
+
+if (!$payKit->check($userId, 'messages')->allowed) {
+    throw new HttpException(402, 'Usage limit reached');
+}
+$answer = $chat->reply($prompt);
+$payKit->report($userId, 'messages');              // consume 1 unit
+```
+
+<Aside type="caution" title="La version 0.1 est expérimentale">
+L'API peut changer avant la 1.0. Épinglez une version dans `composer.json`.
+</Aside>
+
+## Fonctionnalités principales
+
+| Fonctionnalité | Description |
+|---|---|
+| [Offres dans la configuration](/fr/guides/plans/) | Fonctionnalités booléennes et mesurées, groupes d'offres, extensions, essais. Validées à la compilation du conteneur. |
+| [Un appel pour chaque changement d'offre](/fr/guides/subscriptions/) | `subscribe()` gère les nouvelles offres, les montées en gamme au prorata, les descentes planifiées, les résiliations et les reprises. |
+| [Droits et mesure](/fr/guides/entitlements/) | `check()`, `can()` et un `report()` atomique. Les soldes se réinitialisent seuls, sans cron. |
+| [Contrôle d'accès](/fr/guides/access-control/) | Un attribut `#[RequiresFeature]`, le voter `PAYKIT_FEATURE` et des fonctions Twig. |
+| [Webhooks idempotents](/fr/guides/webhooks/) | Chaque événement Stripe est appliqué une fois. Les échecs sont réessayés, les doublons ignorés. |
+| [Tests sans Stripe](/fr/guides/testing/) | Un fournisseur fictif enregistre les appels et rejoue les webhooks, pour que les tests restent hors ligne. |
+
+## Comment lire cette documentation
+
+La barre latérale suit l'ordre dans lequel vous en aurez besoin :
+
+- **Prise en main** installe le bundle et déclare une première offre.
+- **Guides** expliquent un sujet chacun, des offres aux fournisseurs de paiement personnalisés.
+- **Référence** liste chaque option de configuration, chaque méthode PHP et chaque commande de console.
+
+Appuyez sur <kbd>Ctrl</kbd> <kbd>K</kbd> (ou <kbd>⌘</kbd> <kbd>K</kbd>) pour rechercher, et utilisez
+**Copier la page** en haut de chaque page pour la coller dans un assistant IA en Markdown.
+
+## Prérequis
+
+Cette documentation suppose que vous connaissez les services Symfony, les contrôleurs
+et Doctrine, et que vous avez un compte Stripe pour la production. Le fournisseur
+fictif couvre le développement local et les tests.
+
+<CardGrid>
+	<LinkCard title="Installation" description="Installez le bundle, créez ses tables et connectez Stripe." href="/fr/getting-started/installation/" />
+	<LinkCard title="Vous venez de PayKit (TypeScript)" description="Voyez comment chaque concept PayKit se transpose dans le bundle." href="/fr/reference/paykit-mapping/" />
+</CardGrid>
+
+## Crédits
+
+PayKit Bundle est un portage Symfony indépendant de [PayKit](https://paykit.sh)
+([getpaykit/paykit](https://github.com/getpaykit/paykit)), le framework de facturation
+pour TypeScript, par Max Katz et les contributeurs. Il reprend les concepts et la
+forme de l'API de PayKit, réimplémentés en PHP, et ne contient aucun code source de PayKit.

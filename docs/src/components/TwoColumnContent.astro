@@ -1,0 +1,31 @@
+<div class="pk-columns">
+	<div class="main-pane"><slot /></div>
+	{
+		Astro.locals.starlightRoute.toc && (
+			<aside class="pk-toc-column print:hidden">
+				<slot name="right-sidebar" />
+			</aside>
+		)
+	}
+</div>
+
+<style>
+	.main-pane {
+		min-width: 0;
+		isolation: isolate;
+	}
+	.pk-toc-column {
+		display: contents;
+	}
+	@media (min-width: 72rem) {
+		/* Only pages with a table of contents reserve the right column. */
+		:global(:root[data-has-toc]) .pk-columns {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) var(--pk-toc-width);
+			gap: 3rem;
+		}
+		.pk-toc-column {
+			display: block;
+		}
+	}
+</style>

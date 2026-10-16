@@ -1,0 +1,124 @@
+---
+import MobileMenuToggle from '@astrojs/starlight/components/MobileMenuToggle.astro';
+
+const { hasSidebar } = Astro.locals.starlightRoute;
+---
+
+<div class="pk-page">
+	<header class="pk-topbar"><slot name="header" /></header>
+	<div class="pk-shell">
+		{
+			hasSidebar && (
+				<nav class="pk-sidebar print:hidden" aria-label={Astro.locals.t('sidebarNav.accessibleLabel')}>
+					<MobileMenuToggle />
+					<script>
+						// Same behaviour as Starlight's frame: a popover on mobile, a static column on desktop.
+						class StarlightSidebarPane extends HTMLElement {
+							constructor() {
+								super();
+								const desktop = matchMedia('(min-width: 50em)');
+								const reset = () => {
+									this.popover = desktop.matches ? null : 'auto';
+								};
+								reset();
+								desktop.addEventListener('change', reset);
+								this.addEventListener('toggle', ({ newState }) => this.trapFocus(newState === 'open'));
+							}
+							trapFocus(shouldTrap: boolean) {
+								document.querySelectorAll<HTMLElement>('.main-frame, .sl-skip-link').forEach((el) => {
+									el.toggleAttribute('inert', shouldTrap);
+								});
+							}
+						}
+						customElements.define('sl-sidebar-pane', StarlightSidebarPane);
+					</script>
+					<sl-sidebar-pane popover="" id="starlight__sidebar" class="pk-sidebar-pane">
+						<div class="pk-sidebar-content">
+							<slot name="sidebar" />
+						</div>
+					</sl-sidebar-pane>
+				</nav>
+			)
+		}
+		<div class="main-frame"><slot /></div>
+	</div>
+</div>
+
+<style>
+	.pk-topbar {
+		position: sticky;
+		top: 0;
+		z-index: var(--sl-z-index-navbar);
+		height: var(--sl-nav-height);
+		padding-inline: var(--pk-gutter);
+		background: color-mix(in srgb, var(--pk-bg) 85%, transparent);
+		backdrop-filter: saturate(180%) blur(8px);
+		-webkit-backdrop-filter: saturate(180%) blur(8px);
+	}
+	:global([data-has-sidebar]) .pk-topbar {
+		padding-inline-end: calc(var(--pk-gutter) + var(--sl-menu-button-size) + 0.5rem);
+	}
+	.pk-shell {
+		max-width: var(--pk-max-width);
+		margin-inline: auto;
+		padding-inline: var(--pk-gutter);
+	}
+	.pk-sidebar-pane {
+		/* Popover defaults off: the mobile menu is a full-screen sheet under the top bar. */
+		border: unset;
+		padding: unset;
+		height: unset;
+		color: unset;
+		position: fixed;
+		z-index: var(--sl-z-index-menu);
+		inset-block: var(--sl-nav-height) 0;
+		inset-inline: 0;
+		width: 100%;
+		background: var(--pk-bg);
+		overflow-y: auto;
+	}
+	.pk-sidebar-content {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		padding: 1rem var(--pk-gutter) 2rem;
+	}
+	.main-frame {
+		min-width: 0;
+		padding-top: var(--sl-mobile-toc-height);
+	}
+
+	@media (min-width: 50rem) {
+		:global([data-has-sidebar]) .pk-topbar {
+			padding-inline-end: var(--pk-gutter);
+		}
+		.pk-shell {
+			display: grid;
+			grid-template-columns: var(--pk-sidebar-width) minmax(0, 1fr);
+			gap: 2.5rem;
+		}
+		:global(:root:not([data-has-sidebar])) .pk-shell {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.pk-sidebar-pane {
+			display: block;
+			/* Reset the mobile sheet's inset first: a later shorthand would wipe `top`. */
+			inset: unset;
+			position: sticky;
+			top: var(--sl-nav-height);
+			height: calc(100dvh - var(--sl-nav-height));
+			width: auto;
+			background: transparent;
+			overscroll-behavior: contain;
+			scrollbar-width: none;
+			scrollbar-color: var(--pk-border) transparent;
+		}
+		.pk-sidebar-pane:hover,
+		.pk-sidebar-pane:focus-within {
+			scrollbar-width: thin;
+		}
+		.pk-sidebar-content {
+			padding: 2rem 0.75rem 3rem 0;
+		}
+	}
+</style>

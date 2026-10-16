@@ -19,7 +19,7 @@ No Stripe account is needed: the tests use `PayKit\Bundle\Testing\FakeProvider` 
 - Keep billing rules in `Service/`, persistence in `Repository/BillingRepository`, and provider specifics behind `PaymentProviderInterface`.
 - If you change an entity, update `migrations/` (add a new migration class). `MigrationTest` fails when the mapping and the migrations diverge.
 - Every behavior change needs a test. Lifecycle scenarios go in `tests/Integration/SubscriptionLifecycleTest.php`.
-- Keep `README.md` (especially the PayKit mapping table) in sync with user-facing changes and add a line to `CHANGELOG.md`.
+- Keep the documentation in `docs/src/content/docs/` (especially the PayKit mapping page) and `README.md` in sync with user-facing changes, and add a line to `CHANGELOG.md`.
 - Upstream PayKit is MIT-licensed. Port ideas, do not copy code verbatim.
 
 ## Commit messages

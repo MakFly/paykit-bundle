@@ -1,0 +1,30 @@
+---
+import Pagination from '@astrojs/starlight/components/Pagination.astro';
+
+const t = Astro.locals.t;
+---
+
+<footer class="pk-footer">
+	<Pagination />
+	<p class="pk-footer-note">
+		{t('pk.footer.before')}{' '}
+		<a href="https://paykit.sh">PayKit</a>{t('pk.footer.after')}
+	</p>
+</footer>
+
+<style>
+	.pk-footer {
+		margin-top: 4rem;
+	}
+	.pk-footer-note {
+		margin-top: 3rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--pk-border);
+		color: var(--pk-muted);
+		font-size: 0.8125rem;
+	}
+	.pk-footer-note a {
+		color: inherit;
+		text-underline-offset: 3px;
+	}
+</style>
